@@ -1,0 +1,74 @@
+import 'package:flutter/material.dart';
+
+///
+class KeyboardVisibility extends StatefulWidget {
+  ///
+  const KeyboardVisibility({
+    super.key,
+    this.child,
+    this.listener,
+    this.builder,
+  });
+
+  ///
+  final Widget? child;
+
+  ///
+  final Widget Function(
+    BuildContext context,
+    // ignore: avoid_positional_boolean_parameters
+    bool isKeyboardVisible,
+    Widget? child,
+  )? builder;
+
+  ///
+  // ignore: avoid_positional_boolean_parameters
+  final void Function(bool visible)? listener;
+
+  @override
+  State<KeyboardVisibility> createState() => _KeyboardVisibilityState();
+}
+
+class _KeyboardVisibilityState extends State<KeyboardVisibility>
+    with WidgetsBindingObserver {
+  var _isKeyboardVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() {
+    final viewInsets = View.of(context).viewInsets;
+    final bottomInset = viewInsets.bottom;
+
+    final visible = bottomInset > 0.0;
+
+    if (visible != _isKeyboardVisible) {
+      _isKeyboardVisible = visible;
+      widget.listener?.call(visible);
+      if (widget.builder != null) {
+        setState(() {});
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.builder?.call(
+          context,
+          _isKeyboardVisible,
+          widget.child,
+        ) ??
+        widget.child ??
+        const SizedBox();
+  }
+}
